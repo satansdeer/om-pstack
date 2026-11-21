@@ -1,0 +1,50 @@
+name: Sync OMP from upstream
+
+on:
+  schedule:
+    - cron: "23 6 * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: sync-omp
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    if: github.repository == 'satansdeer/om-pstack' && github.ref == 'refs/heads/omp'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: omp
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Import upstream pstack only
+        run: |
+          git fetch --no-tags https://github.com/cursor/plugins.git main:refs/remotes/upstream/main
+          git restore --source upstream/main --staged --worktree -- pstack
+
+      - name: Generate OMP plugin
+        run: python3 scripts/adapt.py --upstream-ref upstream/main
+
+      - name: Test adapter
+        run: python3 -m unittest discover -s tests
+
+      - name: Commit and push changed plugin
+        run: |
+          git add -- pstack omp upstream.lock.json .omp-plugin/marketplace.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: sync pstack and generated OMP plugin"
+          git push origin HEAD:omp

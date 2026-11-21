@@ -1,0 +1,15 @@
+{
+  "name": "om-pstack",
+  "owner": {
+    "name": "satansdeer"
+  },
+  "plugins": [
+    {
+      "name": "om-pstack",
+      "source": "./omp",
+      "version": "omp-0.15.46-a01206a1c8f1",
+      "description": "Poteto's pstack skills adapted for OMP.",
+      "homepage": "https://github.com/satansdeer/om-pstack"
+    }
+  ]
+}

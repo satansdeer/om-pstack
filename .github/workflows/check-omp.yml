@@ -1,0 +1,53 @@
+name: Check OMP plugin
+
+on:
+  push:
+    branches: [omp]
+    paths:
+      - "adapters/**"
+      - "scripts/**"
+      - "tests/**"
+      - "omp/**"
+      - "pstack/**"
+      - "upstream.lock.json"
+      - ".omp-plugin/**"
+      - ".github/workflows/check-omp.yml"
+      - ".github/workflows/sync-omp.yml"
+  pull_request:
+    paths:
+      - "adapters/**"
+      - "scripts/**"
+      - "tests/**"
+      - "omp/**"
+      - "pstack/**"
+      - "upstream.lock.json"
+      - ".omp-plugin/**"
+      - ".github/workflows/check-omp.yml"
+      - ".github/workflows/sync-omp.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Regenerate OMP plugin
+        run: python3 scripts/adapt.py
+
+      - name: Check generated plugin and lock are current
+        run: |
+          git add -- omp upstream.lock.json .omp-plugin/marketplace.json
+          git diff --cached --exit-code -- omp upstream.lock.json .omp-plugin/marketplace.json
+
+      - name: Test adapter
+        run: python3 -m unittest discover -s tests

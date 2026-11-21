@@ -1,0 +1,21 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "om-pstack",
+  "version": "omp-0.15.46-a01206a1c8f1",
+  "description": "Poteto's pstack skills adapted for OMP, automatically tracking cursor/plugins.",
+  "author": {
+    "name": "Lauren Tan"
+  },
+  "homepage": "https://github.com/satansdeer/om-pstack",
+  "repository": "https://github.com/satansdeer/om-pstack",
+  "license": "MIT",
+  "keywords": [
+    "pstack",
+    "poteto-mode",
+    "workflow",
+    "principles",
+    "agent-style",
+    "subagents",
+    "unslop"
+  ]
+}
