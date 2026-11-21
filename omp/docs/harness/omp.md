@@ -17,6 +17,8 @@ This is the runtime adapter for **om-pstack**, the OMP port of pstack. Read it b
 
 Read referenced files relative to the real installed skill file. A `skill://` URI is a resolver, not a filesystem directory for concatenating `../` paths. Give delegates absolute paths to the intended installed skills, particularly `poteto-mode`; do not let them select a stale cached version by filename or highest version alone. Discover the active plugin through the skill resolver's returned path or available plugin inventory. If unresolved, search only the relevant `.omp/skills/` and `.omp/plugins/` roots and inspect matching `plugin.json` files. Missing required skills are capability blockers, not permission to omit their work.
 
+The generator resolves bundled bold/backtick skill references (including principle shorthand) to relative `SKILL.md` links within this plugin. Follow those links relative to the actual file returned by `read`; do not guess a `skill://` alias from their display text. Bundled slash commands in prose and prompt examples become `/skill:<name>`. External skills and template names are not renamed or supplied by this fork. Unsupported explicit references fail generation. The inherited Claude Code harness remains provenance, not OMP instructions.
+
 ## Paths and installation
 
 | Cursor path or convention | OMP translation |
@@ -32,25 +34,22 @@ OMP v18.18.6 exposes `omp plugin install`, `omp plugin link`, `omp plugin list`,
 
 ## Subagents: actual task contract
 
-The OMP schema is:
+The task schema inspected in OMP 19.1.0 is:
 
 ```text
 {
-  i: string,
   context: string,
   tasks: [{
     task: string,
     solutionSpace: string,
     name?: string,
     agent?: string,
-    tools?: string[],
-    sourceSession?: string,
-    model?: string | string[]
+    tools?: string[]
   }]
 }
 ```
 
-`i` is a short intent; `context` carries shared requirements and interfaces; each `task` is a self-contained brief. `solutionSpace` describes what is fixed versus open about the solution, not its size or sibling coordination. Put independent tasks into one `tasks` array when host delegation policy permits. Never put an agent selector at the top level.
+`context` carries shared requirements and interfaces; each `task` is a self-contained brief. `solutionSpace` describes what is fixed versus open about the solution, not its size or sibling coordination. Put independent tasks into one `tasks` array when host delegation policy permits. Never put an agent selector at the top level. Other host versions may expose additional fields; only use fields present in the live schema.
 
 - Cursor `generalPurpose` means **omit `agent`**. Never write `agent: "task"` or `agent: "generalPurpose"`.
 - `poteto-agent` and `comment-sicko` are valid selectors when registered. Preserve the workflow's explicit selector; in particular a poteto-mode delegate still uses `agent: "poteto-agent"` when it inherits the parent model. Model inheritance does not require changing agent type. If the requested selector is unavailable, report that fact; do not silently replace a mandatory specialist.
@@ -75,11 +74,11 @@ IDs are local to the running process and job records can expire. A missing `proc
 
 Before choosing role models, explicitly read `~/.omp/agent/pstack-models.md` if it exists; do this again after setup changes it. This file is **not automatically loaded** merely because it is Markdown. Pass relevant role settings to workers that spawn children, or require them to read the file too. Never read or create the Cursor model rule as an OMP fallback.
 
-Use exact available `provider/model` identifiers from the running host or `omp models --json`. A catalog entry is discovery evidence, not proof of credentials, quota, or a successful inference. Do not copy upstream Cursor slugs, strip suffixes heuristically, invent aliases, or assume a same-family replacement exists. Upstream agent `model:` frontmatter is a Cursor default, not authority to send that value in OMP. Explicitly select a confirmed OMP model, or omit `model` for inheritance under this policy.
+Use exact available `provider/model` identifiers from the running host or `omp models --json`. A catalog entry is discovery evidence, not proof of credentials, quota, or a successful inference. Do not copy upstream Cursor slugs, strip suffixes heuristically, invent aliases, or assume a same-family replacement exists. Upstream agent `model:` frontmatter is a Cursor default, not authority to send that value in OMP. Only select a task model when the live schema supports it. The inspected OMP 19.1.0 schema above does not; report an explicit role override as unsupported rather than silently claiming it was applied.
 
 - A configured real role model must be validated against the current model inventory. An unavailable explicit user choice needs resolution; do not silently use an upstream default.
 - `inherit-parent` and `auto` are **configuration aliases**, implemented by omitting the task `model` field. They are not literal model IDs. Missing file or role means inherit the parent, not resurrect upstream hard-coded model defaults. State this adaptation when model choice matters.
-- `model` accepts a string or an ordered string array under the live task schema. For a comparison panel, create one task per seat with its own string model; a model array is not panel fan-out. Alias seats still count as separate tasks.
+- If exposed by the live task schema, `model` can select a task model; inspect its accepted type rather than assuming string-array support. For a comparison panel, create one task per seat; a fallback model array is not panel fan-out. Alias seats still count as separate tasks. A host without per-task selection cannot satisfy a required multi-model panel through `task` alone.
 - No task `effort` or `thinking` field exists. Do not append an effort word to a model ID. An effort-looking suffix is meaningful only if it is part of an exact detected ID; never rewrite it mechanically.
 - `omp --thinking <level>` controls a CLI run, not a task-field translation. Consult current CLI help and provider support before using it; this adapter does not promise independent per-role thinking controls.
 - Preserve comparison constraints, including minimum seats, model-family diversity, and cross-vendor judging. Infer vendor from the underlying model, not merely its gateway/provider prefix (two providers may expose the same vendor). If identities or alternatives cannot be established, report the unverified constraint or block that gate as appropriate. Parent inheritance cannot count as a proven different vendor. Never silently collapse a required panel to one model.
@@ -101,7 +100,7 @@ Never calculate Cursor workspace slugs, glob `~/.cursor/projects/`, guess OMP se
 
 For OMP history, read `xd://eval/archive` before using the `archive` object through `eval`. Discover sessions with project-scoped `archive.sessions`, `archive.search`, or `archive.recaps`; use the returned IDs/paths, not inferred storage layouts. Paginate/slice the requested scope rather than silently reducing “all” to the most recent page. Recaps are incomplete summaries, not proof of tools run or files opened.
 
-For conclusions, decisions, or what a historical session verified, use `task` with `agent: "seance"` and the discovered `sourceSession`. A user pointing to a particular prior session also routes through seance; do not independently read its raw JSONL. Supply an available explicit model if the historical saved model is unavailable. Use current live sources only for facts that may have changed since that session.
+For conclusions, decisions, or what a historical session verified, use the host's historical-session delegate only when its selector and `sourceSession` field are exposed by the live schema. The inspected OMP 19.1.0 task schema above has no `sourceSession`; do not invent that field or claim a current-session delegate inspected a historical session. Report the unsupported gate and use an authorized host-supported historical workflow if available. A user pointing to a particular prior session does not authorize independent raw JSONL access.
 
 For current-run delegates, inspect `history://<id>`/`agent://<id>` when the needed evidence is retained. When exact chain-following/tool activity must be audited, obtain the full trace from supported history facilities or a narrowly scoped mechanical read of an archive-returned transcript path where permitted by host policy. A concise history/recap or agent self-report cannot satisfy a full-trace gate. If full evidence is unavailable, mark that gate unverified; request an authorized export for inaccessible external sessions rather than inventing access. Evidence artifacts and decision logs must use actual host-provided or explicitly chosen authorized locations, never a guessed “system prompt root store.”
 

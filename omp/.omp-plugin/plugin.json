@@ -1,7 +1,6 @@
 {
-  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
   "name": "om-pstack",
-  "version": "omp-0.15.46-a01206a1c8f1",
+  "version": "omp-0.15.46-c971ad951521",
   "description": "Poteto's pstack skills adapted for OMP, automatically tracking cursor/plugins.",
   "author": {
     "name": "Lauren Tan"
