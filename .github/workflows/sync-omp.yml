@@ -4,6 +4,10 @@ on:
   schedule:
     - cron: "23 6 * * *"
   workflow_dispatch:
+  push:
+    branches: [omp]
+    paths:
+      - ".github/workflows/sync-omp.yml"
 
 permissions: {}
 

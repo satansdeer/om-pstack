@@ -43,11 +43,13 @@ The default `omp` branch contains:
 - `.omp-plugin/marketplace.json`: OMP-only catalog. The inherited Cursor catalogs are not used by OMP.
 - `upstream.lock.json`: exact upstream commit and pstack tree used.
 
-The **Sync OMP from upstream** Action runs daily at 06:23 UTC and on manual dispatch. It imports only `pstack/` from `cursor/plugins:main`, regenerates the plugin/catalog, runs the regression check, and pushes changes to `omp`. Deleted upstream skills disappear from the generated plugin. Unrelated upstream commits produce no lock or distribution churn. Local adapter changes are never merged into the upstream tree.
+The **Sync OMP from upstream** Action runs daily at 06:23 UTC, on manual dispatch, and when its workflow definition changes. It imports only `pstack/` from `cursor/plugins:main`, regenerates the plugin/catalog, runs the regression check, and pushes changes to `omp`. Deleted upstream skills disappear from the generated plugin. Unrelated upstream commits produce no lock or distribution churn. Local adapter changes are never merged into the upstream tree.
 
 A content-addressed, non-semver install version changes for source, adapter, or generator updates, including upstream changes that do not bump pstack's version. OMP detects these versions by inequality. Refreshing the catalog alone does not upgrade an installed plugin.
 
 Checks on adapter changes and PRs require generated output to be current. The inherited Cursor harness validation is replaced by OMP checks. Sync failures are visible as failed GitHub Actions runs; upstream prompt/tool changes may require an adapter update. This is deterministic adaptation, not a claim that every future Cursor-only workflow becomes runnable automatically. GitHub can disable scheduled workflows after 60 days of repository inactivity; re-enable the workflow if that happens.
+
+Verified with OMP 18.18.6: local and GitHub marketplace installation, adapter-only version upgrades, and installed `setup-pstack` skill resolution. These checks do not certify the semantics of every skill or future upstream change.
 
 ## Develop and verify
 
