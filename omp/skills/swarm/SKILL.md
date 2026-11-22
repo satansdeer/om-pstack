@@ -21,14 +21,14 @@ Open a todolist with one entry per phase before launching anything.
 
 1. State the done predicate and the artifact or report the swarm must return.
 2. Choose the shape. Partition into slices, race N workers on identical briefs, or mix both. For a race or mixed shape, declare `first pass`, `rank all`, or `best-of` before spawning.
-3. Pick the worker model from the `swarm workers` line in `~/.omp/agent/pstack-models.md`. If the rule or that line is missing, use `claude-opus-5-5-high-fast`. For `auto` or `inherit-parent`, omit `model` so the workers run on the parent model. If the Task tool rejects a slug, use the default and say so. If it rejects the default, use the closest valid slug of the same family from its error message. For a model race, name each arm's model up front. Pick each subagent's reasoning level for the job, per the Subagents section of the [**poteto-mode**](../poteto-mode/SKILL.md) skill.
+3. Read the OMP adapter's swarm routing section before selecting workers. Ordinary `/skill:swarm` uses native OMP `task`; only explicit `--fabric-local` selects Fabric. Read `~/.omp/agent/pstack-models.md` if present. Native tasks inherit the parent unless their live schema supports an explicitly validated model choice; Fabric workers inherit their requested harness's native default when `model` is omitted. Never guess model identifiers or claim unsupported model/effort controls. For a model race, establish supported exact choices before launching; otherwise report that gate BLOCKED.
 4. Give each worker its own writable output when it writes. When workers verify or measure commits, each brief names the exact SHAs. A measurement brief also names the method (sample count, what one sample is, order). The worker records both in its result.
 
 ## Phase B: Fan out
 
-Spawn all N workers in one message with `subagent_type: generalPurpose`, `environment: "cloud"`, `run_in_background: true`, and the step 3 model, left unset for `auto` or `inherit-parent`. Use `environment: "local"` only when the worker needs access to something on the user's computer.
+For ordinary swarm, spawn all N workers with native OMP `task`: shared `context` and one self-contained `tasks` entry per worker with `task` and `solutionSpace`; omit `agent` for the default worker. Native completion auto-delivers; use `wait` only when blocked. For explicit `/skill:swarm --fabric-local --fabric-project NAME --fabric-harness ID`, follow the OMP adapter's typed Fabric route instead. Do not invoke both routes. Required remote/cloud execution or security isolation is unsupported: report BLOCKED before spawning, never substitute local workers.
 
-When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.
+For Fabric, resolve any requested branch to its exact commit SHA and require a matching READY source through `source_ref`; never prepare implicitly or use an older base. Ordinary native tasks needing an independent checkout require an explicitly authorized real worktree and exact working directory in their briefs. Record each worker's actual source SHA; neither route provides a cloud branch field.
 
 Every brief stands alone. Include the goal, scope, exact slice or race arm, how to verify, and what to report. Reports use `PASS`, `ISSUES`, or `BLOCKED` with evidence. A worker that can prove a defect reports `ISSUES` and lists every issue it can prove, not only the first.
 

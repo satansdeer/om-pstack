@@ -1,6 +1,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 
@@ -108,6 +109,38 @@ class AdaptTest(unittest.TestCase):
         autonomous = adapt.convert_tools((source / "skills/poteto-mode/playbooks/autonomous-run.md").read_text(),
                                          Path("skills/poteto-mode/playbooks/autonomous-run.md"))
         self.assertIn("or ask unnecessary questions", autonomous)
+
+
+    def test_swarm_workflow_drift_rejects_generation_without_replacing_install(self):
+        relative = Path("skills/swarm/SKILL.md")
+        upstream = (adapt.ROOT / "pstack" / relative).read_text()
+        # These three upstream decisions need explicit OMP migrations: model,
+        # dispatch/placement, and branch selection. Missing/duplicate/changed
+        # anchors must fail closed rather than ship unreviewed Cursor behavior.
+        decisions = [
+            line for line in upstream.splitlines()
+            if line.startswith(("3. Pick the worker model", "Spawn all N workers",
+                                "When a worker must start"))
+        ]
+        self.assertEqual(len(decisions), 3)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, output = root / "pstack", root / "omp"
+            shutil.copytree(adapt.ROOT / "pstack", source)
+            adapt.generate(source, adapt.ROOT / "adapters/omp.md", output)
+            installed = {p.relative_to(output): p.read_bytes()
+                         for p in output.rglob("*") if p.is_file()}
+            for decision in decisions:
+                for replacement in ("", decision + "\n" + decision,
+                                    decision.replace("worker", "executor")):
+                    with self.subTest(decision=decision, replacement=replacement):
+                        (source / relative).write_text(upstream.replace(decision, replacement))
+                        with self.assertRaisesRegex(ValueError, "skills/swarm/SKILL.md"):
+                            adapt.generate(source, adapt.ROOT / "adapters/omp.md", output)
+                        self.assertEqual(installed, {
+                            p.relative_to(output): p.read_bytes()
+                            for p in output.rglob("*") if p.is_file()
+                        })
 
     def test_updates_remove_retired_skills_and_publish_adapter_changes(self):
         with tempfile.TemporaryDirectory() as directory:

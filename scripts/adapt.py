@@ -94,6 +94,45 @@ QUESTION = (
     "wait for the user's answer and never infer approval in unattended sessions"
 )
 TOOL_REWRITES = {
+    "skills/swarm/SKILL.md": [
+        (
+            "3. Pick the worker model from the `swarm workers` line in `~/.cursor/rules/pstack-models.mdc`. "
+            "If the rule or that line is missing, use `claude-opus-5-5-high-fast`. "
+            "For `auto` or `inherit-parent`, omit `model` so the workers run on the parent model. "
+            "If the Task tool rejects a slug, use the default and say so. "
+            "If it rejects the default, use the closest valid slug of the same family from its error message. "
+            "For a model race, name each arm's model up front. "
+            "Pick each subagent's reasoning level for the job, per the Subagents section of the **poteto-mode** skill.",
+            "3. Read the OMP adapter's swarm routing section before selecting workers. Ordinary "
+            "`/swarm` uses native OMP `task`; only explicit `--fabric-local` selects Fabric. "
+            "Read `~/.omp/agent/pstack-models.md` if present. Native tasks inherit the parent "
+            "unless their live schema supports an explicitly validated model choice; Fabric workers "
+            "inherit their requested harness's native default when `model` is omitted. Never guess "
+            "model identifiers or claim unsupported model/effort controls. For a model race, "
+            "establish supported exact choices before launching; otherwise report that gate BLOCKED.",
+        ),
+        (
+            "Spawn all N workers in one message with `subagent_type: generalPurpose`, "
+            '`environment: "cloud"`, `run_in_background: true`, and the step 3 model, '
+            "left unset for `auto` or `inherit-parent`. "
+            'Use `environment: "local"` only when the worker needs access to something on the user\'s computer.',
+            "For ordinary swarm, spawn all N workers with native OMP `task`: shared `context` "
+            "and one self-contained `tasks` entry per worker with `task` and `solutionSpace`; "
+            "omit `agent` for the default worker. Native completion auto-delivers; use `wait` "
+            "only when blocked. For explicit `/swarm --fabric-local --fabric-project NAME "
+            "--fabric-harness ID`, follow the OMP adapter's typed Fabric route instead. "
+            "Do not invoke both routes. Required remote/cloud execution or security isolation "
+            "is unsupported: report BLOCKED before spawning, never substitute local workers.",
+        ),
+        (
+            "When a worker must start from a non-default pushed branch, pass `cloud_base_branch`.",
+            "For Fabric, resolve any requested branch to its exact commit SHA and require a "
+            "matching READY source through `source_ref`; never prepare implicitly or use an older "
+            "base. Ordinary native tasks needing an independent checkout require an explicitly "
+            "authorized real worktree and exact working directory in their briefs. Record each "
+            "worker's actual source SHA; neither route provides a cloud branch field.",
+        ),
+    ],
     "skills/how/SKILL.md": [(
         "Spawn one Task subagent with `subagent_type: generalPurpose` and `readonly: true` "
         "that explores and explains in one pass.",
@@ -236,8 +275,6 @@ def generate(source, adapter, destination):
             if path == harness:
                 continue
             text = path.read_text()
-            for old, new in PATHS.items():
-                text = text.replace(old, new)
             relative = path.relative_to(stage)
             if not relative.as_posix().startswith("docs/harness/"):
                 try:
@@ -245,6 +282,8 @@ def generate(source, adapter, destination):
                     text = convert_references(text, relative, skills)
                 except ValueError as error:
                     raise ValueError(f"{relative}: {error}") from error
+            for old, new in PATHS.items():
+                text = text.replace(old, new)
             if path.name == "SKILL.md" or relative.parts[0] == "agents":
                 try:
                     text, paths = convert_metadata(text, agent=relative.parts[0] == "agents")
