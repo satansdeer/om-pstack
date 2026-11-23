@@ -133,6 +133,10 @@ TOOL_REWRITES = {
             "worker's actual source SHA; neither route provides a cloud branch field.",
         ),
     ],
+    "skills/poteto-help/SKILL.md": [(
+        "Run parallel checks over slices, or race workers, as cloud agents",
+        "Run parallel checks over slices or race workers with native OMP tasks; explicit Fabric LOCAL is optional",
+    )],
     "skills/how/SKILL.md": [(
         "Spawn one Task subagent with `subagent_type: generalPurpose` and `readonly: true` "
         "that explores and explains in one pass.",

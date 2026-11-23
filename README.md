@@ -34,7 +34,7 @@ Cursor skill `paths` become native OMP time-traveling stream rules (TTSR), gated
 
 Bundled bold/backtick skill references, including shorthand such as `type-system-discipline`, become relative links to the exact bundled `SKILL.md`. Principle-index entries are validated, existing bundled skill links are checked, and ambiguous or unknown explicit skill references reject the update before replacing the installed tree. Known slash commands become `/skill:<name>` in descriptions, prose, and text/Markdown prompt examples. Executable code fences, inline code expressions, URLs, and link targets are preserved. External dependencies and template skill names are not supplied or guessed. The inherited Claude Code harness is retained as provenance, not converted into OMP instructions.
 
-Explicit tool migrations cover `how`'s read-only scout, `no-comments`' Comment Sicko selector, and questions in `automate-me`, `setup-pstack`, and the autonomous-run playbook. Questions preserve options, multiple-answer intent, and approval requirements; when `ask` is unavailable they require a chat answer, never fabricated unattended approval. These instruction-level rules fail if their expected upstream wording changes, requiring semantic review rather than a blind rename. Delegate execution and interactive `ask` UI behavior are not covered by the runtime smoke check.
+Explicit tool migrations cover `how`'s read-only scout, `no-comments`' Comment Sicko selector, questions in `automate-me`, `setup-pstack`, and the autonomous-run playbook, and `poteto-help`'s swarm row: its upstream cloud-agent wording becomes native OMP tasks with explicit Fabric LOCAL optional. Questions preserve options, multiple-answer intent, and approval requirements; when `ask` is unavailable they require a chat answer, never fabricated unattended approval. These instruction-level rules fail if their expected upstream wording changes, requiring semantic review rather than a blind rename. Delegate execution and interactive `ask` UI behavior are not covered by the runtime smoke check.
 
 The adapter requires `/skill:setup-pstack` to write `~/.omp/agent/pstack-models.md` and discover real OMP models rather than use Cursor slugs. The setup/model workflow itself still needs deterministic conversion. The inspected OMP 19.1.0 task schema exposes neither per-task model selection nor `sourceSession`; required model overrides, multi-model panels, and historical-session delegation cannot be claimed supported through that schema. Other host versions must be checked against their live schemas. Requested reasoning budgets are not claimed as enforced.
 
@@ -74,6 +74,11 @@ python3 scripts/adapt.py
 python3 -m unittest discover -s tests
 omp --plugin-dir ./omp
 ```
+
+In a shallow clone or Fabric prepared checkout without the locked upstream Git
+object, use `python3 scripts/adapt.py --upstream-ref HEAD`. The generator checks
+the committed `pstack/` tree and rejects local source changes; when that tree
+matches `upstream.lock.json`, it preserves the existing upstream commit identity.
 
 To reproduce native loading, invocation, and scope checks against an authenticated OMP model:
 
