@@ -132,6 +132,38 @@ TOOL_REWRITES = {
             "authorized real worktree and exact working directory in their briefs. Record each "
             "worker's actual source SHA; neither route provides a cloud branch field.",
         ),
+        (
+            "Read the terminal results. Drop a result that does not record the SHAs and method its brief names, "
+            "and respawn that worker once. After a second miss, record a gap. A gap does not count as a pass. "
+            "For coverage, every required slice needs a result. For a race, apply the selection rule declared "
+            "up front. Use first pass, rank all, or best-of. Do not paste raw worker dumps.",
+            "Before launching any worker, freeze the required task/slice roster, full consumer source SHA(s), "
+            "exact defined verification or measurement method (including sample count, what one sample is, "
+            "and order), and any declared race rule and selection criteria in the briefs. Bind each checked "
+            "result to its assigned task/slice or race-arm slot; duplicate results cannot fill another slice.\n\n"
+            "Read the terminal results and independently check the evidence. Both the requested and "
+            "independently observed full consumer source SHA(s) must match the brief, and the performed "
+            "method must match its definition, count, and order. Missing, short, wrong, or unverified source, "
+            "substituted upstream/plugin identity, wrong method, or self-report-only evidence remains "
+            "rejected/unverified, never requested coverage. Transport completion or exit 0 is not evidence "
+            "admission or PASS. Preserve PASS, ISSUES, and BLOCKED distinctions, all proven issues, and "
+            "blocked, rejected, and missing rows; PASS requires admitted evidence satisfying the done "
+            "predicate, not a worker's self-claimed verdict.\n\n"
+            "Proceeding with N-1 permits independent work but never shrinks the frozen required denominator. "
+            "For coverage, every required slice needs admitted evidence; any required coverage gap prevents "
+            "coverage PASS, even if surviving workers are healthy. Mixed mode still requires every coverage "
+            "slice. For each missing or rejected required slot, allow at most one replacement, only within "
+            "the caller's explicit total-attempt and retry authority. Count failed starts and replacements "
+            "across all batches. Zero authorized retries, exhaustion, or a second miss means retain the gap; "
+            "no nested fanout or budget reset. These are controller policies, not hard runtime or billing "
+            "enforcement.\n\n"
+            "Preserve the declared coverage, race, or mixed mode and every declared rule. For a race, "
+            "first pass selects the first candidate actually satisfying the common independent checks "
+            "and done predicate, not the fastest terminal result or self-claimed PASS. Rank all and best-of "
+            "apply the predeclared criteria only to admitted comparable candidates, reporting missing, "
+            "rejected, and dropout candidates. Never silently switch rules or assert model diversity "
+            "without evidence. Return the consolidated evidence and gaps, not raw worker dumps.",
+        ),
     ],
     "skills/poteto-help/SKILL.md": [(
         "Run parallel checks over slices, or race workers, as cloud agents",
