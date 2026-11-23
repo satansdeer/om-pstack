@@ -142,6 +142,40 @@ class AdaptTest(unittest.TestCase):
                             for p in output.rglob("*") if p.is_file()
                         })
 
+    def test_help_swarm_migration_rejects_drift_without_replacing_install(self):
+        relative = Path("skills/poteto-help/SKILL.md")
+        upstream = (adapt.ROOT / "pstack" / relative).read_text()
+        anchor = "Run parallel checks over slices, or race workers, as cloud agents"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source, output = root / "pstack", root / "omp"
+            shutil.copytree(adapt.ROOT / "pstack", source)
+            adapt.generate(source, adapt.ROOT / "adapters/omp.md", output)
+            help_text = (output / relative).read_text()
+            self.assertIn(
+                "| Run parallel checks over slices or race workers with native OMP tasks; "
+                "explicit Fabric LOCAL is optional | [`/skill:swarm`](../swarm/SKILL.md) |",
+                help_text,
+            )
+            self.assertNotIn(anchor, help_text)
+            installed = {p.relative_to(output): p.read_bytes()
+                         for p in output.rglob("*") if p.is_file()}
+            for drift, replacement in (
+                ("missing", ""),
+                ("duplicate", anchor + "\n" + anchor),
+                ("changed cloud wording", anchor.replace("cloud agents", "remote agents")),
+            ):
+                with self.subTest(drift=drift):
+                    (source / relative).write_text(upstream.replace(anchor, replacement))
+                    with self.assertRaisesRegex(
+                        ValueError, "skills/poteto-help/SKILL.md: Tool instruction changed"
+                    ):
+                        adapt.generate(source, adapt.ROOT / "adapters/omp.md", output)
+                    self.assertEqual(installed, {
+                        p.relative_to(output): p.read_bytes()
+                        for p in output.rglob("*") if p.is_file()
+                    })
+
     def test_updates_remove_retired_skills_and_publish_adapter_changes(self):
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)

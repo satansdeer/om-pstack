@@ -79,7 +79,7 @@ The default answer is `/skill:poteto-mode`, which runs most of the others when i
 | Know what a small diff could break outside itself | [`/skill:blast-radius`](../blast-radius/SKILL.md) |
 | Settle types and module shape before code that crosses a function boundary | [`/skill:architect`](../architect/SKILL.md) |
 | Get several attempts at one brief, merged into the best one | [`/skill:arena`](../arena/SKILL.md) |
-| Run parallel checks over slices, or race workers, as cloud agents | [`/skill:swarm`](../swarm/SKILL.md) |
+| Run parallel checks over slices or race workers with native OMP tasks; explicit Fabric LOCAL is optional | [`/skill:swarm`](../swarm/SKILL.md) |
 | Have different models review a diff and try to break it | [`/skill:interrogate`](../interrogate/SKILL.md) |
 | Fix a bug test-first when a cheap local test exists | [`/skill:tdd`](../tdd/SKILL.md) |
 | Apply TypeScript rules to `.ts` or `.tsx` work | [`/skill:typescript-best-practices`](../typescript-best-practices/SKILL.md) |
