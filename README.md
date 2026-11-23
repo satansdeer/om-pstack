@@ -63,6 +63,8 @@ Verified with OMP 18.18.6: local and GitHub marketplace installation, adapter-on
 
 Verified with OMP 19.1.0: all 58 skills registered, manual-only visibility and explicit invocation preserved, native command spelling present in expanded prompts, both agents registered, and TS/TSX reads successfully loading the exact linked principle file without tool errors. Python scope remains excluded. This verifies reference resolution and native loading, not every skill's execution.
 
+Swarm aggregation now has a full-paragraph, exact-once migration: missing, duplicate, or changed upstream wording (including removal of required coverage) rejects generation without replacing the installed distribution. These regression checks verify fail-closed conversion, not live RT03/RT04/RT09 aggregation or race behavior, which remains NOT_VERIFIED. Source/method admission, coverage, authorized retries, and race selection are controller instructions, not hard runtime or billing enforcement.
+
 ## Develop and verify
 
 Requires Git and Python 3.11+. OMP is needed for runtime inspection, not generation.

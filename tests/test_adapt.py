@@ -114,15 +114,15 @@ class AdaptTest(unittest.TestCase):
     def test_swarm_workflow_drift_rejects_generation_without_replacing_install(self):
         relative = Path("skills/swarm/SKILL.md")
         upstream = (adapt.ROOT / "pstack" / relative).read_text()
-        # These three upstream decisions need explicit OMP migrations: model,
-        # dispatch/placement, and branch selection. Missing/duplicate/changed
-        # anchors must fail closed rather than ship unreviewed Cursor behavior.
+        # These four upstream decisions need explicit OMP migrations: model,
+        # dispatch/placement, branch selection, and the full aggregation paragraph.
+        # Missing/duplicate/changed anchors must preserve the installed distribution.
         decisions = [
             line for line in upstream.splitlines()
             if line.startswith(("3. Pick the worker model", "Spawn all N workers",
-                                "When a worker must start"))
+                                "When a worker must start", "Read the terminal results."))
         ]
-        self.assertEqual(len(decisions), 3)
+        self.assertEqual(len(decisions), 4)
         with tempfile.TemporaryDirectory() as directory:
             root = Path(directory)
             source, output = root / "pstack", root / "omp"
@@ -131,8 +131,12 @@ class AdaptTest(unittest.TestCase):
             installed = {p.relative_to(output): p.read_bytes()
                          for p in output.rglob("*") if p.is_file()}
             for decision in decisions:
-                for replacement in ("", decision + "\n" + decision,
-                                    decision.replace("worker", "executor")):
+                replacements = ["", decision + "\n" + decision,
+                                decision.replace("worker", "executor")]
+                if decision.startswith("Read the terminal results."):
+                    replacements.append(decision.replace(
+                        "For coverage, every required slice needs a result. ", ""))
+                for replacement in replacements:
                     with self.subTest(decision=decision, replacement=replacement):
                         (source / relative).write_text(upstream.replace(decision, replacement))
                         with self.assertRaisesRegex(ValueError, "skills/swarm/SKILL.md"):
