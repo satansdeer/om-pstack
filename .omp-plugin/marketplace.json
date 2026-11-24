@@ -7,7 +7,7 @@
     {
       "name": "om-pstack",
       "source": "./omp",
-      "version": "omp-0.15.46-0aa56cd76155",
+      "version": "omp-0.15.48-430a0634bc07",
       "description": "Poteto's pstack skills adapted for OMP.",
       "homepage": "https://github.com/satansdeer/om-pstack"
     }
