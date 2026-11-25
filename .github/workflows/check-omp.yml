@@ -42,7 +42,7 @@ jobs:
           python-version: "3.11"
 
       - name: Regenerate OMP plugin
-        run: python3 scripts/adapt.py
+        run: python3 scripts/adapt.py --upstream-ref HEAD
 
       - name: Check generated plugin and lock are current
         run: |

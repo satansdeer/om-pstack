@@ -92,6 +92,59 @@ python3 scripts/check_omp.py --profile YOUR_PROFILE
 
 This check makes model requests in temporary directories without saving sessions. It asserts actual runtime events, including successful file reads after skill injection, not the assistant's final prose. It does not exercise edit/write scope or delegate execution. Keep the upstream plugin disabled to avoid name collisions.
 
+### Source witness for a native swarm child
+
+The controller freezes the consumer's full Git SHA, relevant repository-relative
+files, exact method (including measurement count/order), and command argv in each
+brief. In the child's authorized consumer checkout, run the checkout's standalone
+stdlib command, for example:
+
+```sh
+python3 /absolute/path/to/om-pstack/scripts/witness.py \
+  --expected-head FULL_CONSUMER_SHA \
+  --source scripts/adapt.py --source adapters/omp.md --source tests/test_adapt.py \
+  --method 'Run the adapter unittest suite once; no measurement sampling' \
+  --witness /absolute/path/to/new-child-evidence.jsonl \
+  -- python3 -m unittest discover -s tests -p test_adapt.py
+```
+
+Replace the example SHA, paths, method, and argv with the frozen brief; list every
+relevant committed file, including predicate inputs/tests. Source paths are
+relative to the consumer repository root, even when invoked from a subdirectory.
+The command independently resolves canonical cwd, repository root, and full HEAD,
+then compares actual file bytes directly with committed Git blobs. Wrong HEAD,
+edited/missing/untracked source, symlinks, and staged changes to listed files
+reject admission before the predicate runs. Raw-byte comparison also catches
+edits hidden by `assume-unchanged`/`skip-worktree`; Git filters or line-ending
+conversions are not treated as identical bytes. Unlisted changes are out of scope.
+
+The new witness file is exclusively created, never reused or overwritten. Its
+first JSONL record is either `rejected` with an error, or a flushed/fsynced
+`pre_test` binding the exact argv/method, canonical cwd/root, requested/observed
+HEAD, source paths, Git blob IDs, and committed/observed SHA-256 hashes.
+Only after that write does the predicate run, without a shell, in the recorded
+cwd. Stdout/stderr remain on the child's normal streams; they are not captured
+in the witness. A second `result` record contains the subprocess return code;
+ordinary exit status is preserved, and signal termination returns `128 + signal`
+while retaining Python's negative return code in the artifact. Admission,
+launch, and witness I/O errors return 2; launch failure records `launch_error`.
+An interrupted or incomplete witness is not success. CLI parse errors or an
+unwritable/existing witness can fail before a new artifact exists.
+
+The artifact does not collect environment variables, auth, credentials, provider,
+or model identity. Do not put secrets in argv or the method: both are recorded.
+This is pre-test source evidence, not a snapshot, filesystem lock, sandbox, or
+protection against concurrent edits or a malicious child. The controller must
+independently check the frozen source list, method/argv, terminal record, and
+predicate evidence; an arbitrary method label or exit 0 alone is not acceptance.
+It does not prove model selection, native Fabric execution, swarm coverage,
+aggregation, or race selection. Historical v0.1.20 two-adapter-test acceptance
+was narrow and append-only, not full swarm parity. Live RT03/RT04/RT09 acceptance
+on the accepted Fabric v0.1.21 / OMP 19.1.1 route still needs a concrete scenario,
+fresh execution admission, and independent manager review; fixtures and worker
+self-reports do not satisfy that gate. No upstream or generated skill changes
+are needed to invoke this command from a native `/skill:swarm` brief.
+
 To import upstream manually:
 
 ```sh
